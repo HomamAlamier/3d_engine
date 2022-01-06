@@ -13,6 +13,8 @@ Window::Window(char vmajor, char vminor, char antialiasing, int width, int heigh
     , _height(height)
     , _title(title)
     , _fullscreen(fullscreen)
+    , _lastTime(0.0)
+    , _fpsCounter(0)
 {
 }
 
@@ -45,6 +47,7 @@ bool Window::init()
         glfwTerminate();
         return false;
     }
+    _lastTime = glfwGetTime();
     return true;
 }
 
@@ -57,6 +60,25 @@ void Window::doEvents()
 {
     glfwSwapBuffers((GLFWwindow*)_window);
     glfwPollEvents();
+}
+
+void Window::setTitle(const std::string& title)
+{
+    glfwSetWindowTitle((GLFWwindow*)_window, title.c_str());
+    _title = title;
+}
+
+void Window::fpsInTitle()
+{
+    double tm = glfwGetTime();
+    double delta = tm - _lastTime;
+    _fpsCounter++;
+    if (delta >= 1.0)
+    {
+        _lastTime = tm;
+        glfwSetWindowTitle((GLFWwindow*)_window, (_title + " [ fps = " + std::to_string((double)_fpsCounter / delta) + " ]").c_str());
+        _fpsCounter = 0;
+    }
 }
 
 NAMESPACE_END

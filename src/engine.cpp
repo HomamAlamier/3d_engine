@@ -5,6 +5,8 @@
 NAMESPACE(sage3d)
 
 Engine::Engine(int width, int height)
+    : _drawCallback(nullptr)
+    , _initCallback(nullptr)
 {
     _window = new Window(GL_MAJOR, GL_MINOR, 1, width, height, "Game");
     _gl = new Engine_GL(this);
@@ -19,12 +21,40 @@ int Engine::exec()
         return 1;
     }
     _logger->debug("Window initialized successfully !");
+    if (_initCallback)
+        _initCallback(this);
     while (!_window->shouldClose())
     {
         _gl->clearColorBuffer();
+        if (_drawCallback)
+        {
+            _drawCallback(_gl);
+        }
+
+        if (getOption(ShowFps))
+        {
+            _window->fpsInTitle();
+        }
+
         _window->doEvents();
     }
     return 0;
+}
+
+void Engine::setOptions(EngineOptions opt, bool value)
+{
+    _options[opt] = value;
+}
+
+bool Engine::getOption(EngineOptions opt)
+{
+    auto it = _options.find(opt);
+    if (it != _options.end())
+    {
+        return it->second;
+    }
+    else
+        return false;
 }
 
 NAMESPACE_END

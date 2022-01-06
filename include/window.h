@@ -21,8 +21,12 @@ public:
     bool init();
     bool shouldClose() const;
     void doEvents();
+    void setTitle(const std::string& title);
+    void fpsInTitle();
 private:
     void* _window;
+    double _lastTime;
+    int _fpsCounter;
 };
 
 NAMESPACE_END
