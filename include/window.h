@@ -2,6 +2,7 @@
 #define WINDOW_H
 #include <macros.h>
 #include <logger.h>
+#include <engine_keyboard.h>
 NAMESPACE(sage3d)
 
 class Window
@@ -23,6 +24,7 @@ public:
     void doEvents();
     void setTitle(const std::string& title);
     void fpsInTitle();
+    KeyboardKeyData getKeyboardKeyData();
 private:
     void* _window;
     double _lastTime;

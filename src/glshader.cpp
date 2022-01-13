@@ -1,6 +1,7 @@
 #include "glshader.h"
 #include <GL/glew.h>
 #include <sstream>
+#include <glm/gtc/type_ptr.hpp>
 NAMESPACE(opengl)
 
 GLShader::GLShader(const std::string& vertexShaderFilename, const std::string& fragmentShaderFilename)
@@ -10,6 +11,11 @@ GLShader::GLShader(const std::string& vertexShaderFilename, const std::string& f
     , _loaded(false)
     , _compiled(false)
 {
+}
+
+GLShader::~GLShader()
+{
+    glDeleteProgram(_programId);
 }
 
 void GLShader::compile()
@@ -118,6 +124,67 @@ void GLShader::use()
     if (!_loaded)
         return;
     glUseProgram(_programId);
+}
+
+int GLShader::getUniformId(const std::string& name)
+{
+    auto it = _idCache.find(name);
+    if (it != _idCache.end())
+    {
+        return it->second;
+    }
+    else
+    {
+        int id = glGetUniformLocation(_programId, name.c_str());
+        if (id != -1)
+            _idCache[name] = id;
+        return id;
+    }
+}
+
+void GLShader::setFloat(float value, const std::string& name)
+{
+    glUniform1f(getUniformId(name), value);
+}
+
+void GLShader::setVec2(const glm::vec2& value, const std::string& name)
+{
+    glUniform2fv(getUniformId(name), 1, glm::value_ptr(value));
+}
+
+void GLShader::setVec3(const glm::vec3& value, const std::string& name)
+{
+    glUniform3fv(getUniformId(name), 1, glm::value_ptr(value));
+}
+
+void GLShader::setVec4(const glm::vec4& value, const std::string& name)
+{
+    glUniform4fv(getUniformId(name), 1, glm::value_ptr(value));
+}
+
+void GLShader::setMatrix4(const glm::mat4& value, const std::string& name)
+{
+    glUniformMatrix4fv(getUniformId(name), 1, GL_FALSE, glm::value_ptr(value));
+}
+
+void GLShader::setInt(int value, const std::string& name)
+{
+    glUniform1i(getUniformId(name), value);
+}
+
+void GLShader::setUInt(uint32_t value, const std::string& name)
+{
+    glUniform1i(getUniformId(name), value);
+}
+
+void GLShader::setIntArray(int *value, uint32_t size, const std::string &name)
+{
+    glUniform1iv(getUniformId(name), sizeof(int) * size, value);
+}
+
+void GLShader::setFloatArray(float *value, uint32_t size, const std::string &name)
+{
+    glUniform1fv(getUniformId(name), sizeof(float) * size, value);
 }
 
 NAMESPACE_END

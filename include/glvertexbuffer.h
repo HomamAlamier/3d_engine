@@ -19,14 +19,16 @@ public:
     READ_PROP(inited, bool)
     READ_PROP(drawType, GLVertexBufferDrawType)
     READ_PROP(vertexCount, size_t)
+    READ_PROP(indicesCount, size_t)
 public:
     GLVertexBuffer(GLVertexBufferDrawType type);
+    ~GLVertexBuffer();
     void init();
     void add(const std::vector<glm::vec2>& v);
     void add(const std::vector<glm::vec3>& v);
     void add(const std::vector<glm::vec4>& v);
     void add(const float* buffer, size_t count, int elementCount);
-    void setDrawIndexes(const std::vector<uint32_t>& v);
+    void setDrawIndices(const std::vector<uint32_t>& v);
     void bind();
 private:
     enum VecType

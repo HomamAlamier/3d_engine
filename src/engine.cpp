@@ -23,6 +23,7 @@ int Engine::exec()
     _logger->debug("Window initialized successfully !");
     if (_initCallback)
         _initCallback(this);
+    _gl->init();
     while (!_window->shouldClose())
     {
         _gl->clearColorBuffer();
@@ -36,6 +37,14 @@ int Engine::exec()
             _window->fpsInTitle();
         }
 
+        if (_kbCallback)
+        {
+            KeyboardKeyData kkd = _window->getKeyboardKeyData();
+            if (kkd.hasValues())
+            {
+                _kbCallback(&kkd);
+            }
+        }
         _window->doEvents();
     }
     return 0;

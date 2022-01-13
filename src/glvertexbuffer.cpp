@@ -15,6 +15,13 @@ GLVertexBuffer::GLVertexBuffer(GLVertexBufferDrawType dtype)
 {
 }
 
+GLVertexBuffer::~GLVertexBuffer()
+{
+    glDeleteVertexArrays(1, &_vao);
+    glDeleteBuffers(1, &_vbo);
+    glDeleteBuffers(1, &_ebo);
+}
+
 void GLVertexBuffer::add(const std::vector<glm::vec2> &v)
 {
     Element e;
@@ -72,29 +79,30 @@ void GLVertexBuffer::init()
     int fullVertexSize = 0;
     for(const Element& e : _elements)
     {
-        for(const Element& e : _elements)
+        switch (e.type)
         {
-            switch (e.type)
-            {
-            case Vec2:
-            {
-                ve.push_back(2);
-                break;
-            }
-            case Vec3:
-            {
-                ve.push_back(3);
-                break;
-            }
-            case Vec4:
-            {
-                ve.push_back(4);
-                break;
-            }
-            case Float:
-                ve.push_back(e.elementCount);
-                break;
-            }
+        case Vec2:
+        {
+            ve.push_back(2);
+            fullVertexSize += 2;
+            break;
+        }
+        case Vec3:
+        {
+            ve.push_back(3);
+            fullVertexSize += 3;
+            break;
+        }
+        case Vec4:
+        {
+            ve.push_back(4);
+            fullVertexSize += 4;
+            break;
+        }
+        case Float:
+            ve.push_back(e.elementCount);
+            fullVertexSize += e.elementCount;
+            break;
         }
     }
     for(size_t vi = 0; vi < _vertexCount; ++vi)
@@ -108,7 +116,6 @@ void GLVertexBuffer::init()
                 const glm::vec2& vec = (static_cast<std::vector<glm::vec2>*>(e.ptr))->at(vi);
                 v.push_back(vec.x);
                 v.push_back(vec.y);
-                fullVertexSize += 2;
                 break;
             }
             case Vec3:
@@ -117,7 +124,6 @@ void GLVertexBuffer::init()
                 v.push_back(vec.x);
                 v.push_back(vec.y);
                 v.push_back(vec.z);
-                fullVertexSize += 3;
                 break;
             }
             case Vec4:
@@ -127,7 +133,6 @@ void GLVertexBuffer::init()
                 v.push_back(vec.y);
                 v.push_back(vec.z);
                 v.push_back(vec.w);
-                fullVertexSize += 4;
                 break;
             }
             case Float:
@@ -135,7 +140,6 @@ void GLVertexBuffer::init()
                 {
                     v.push_back(static_cast<float*>(e.ptr)[ (vi * e.elementCount) + i ]);
                 }
-                fullVertexSize += e.elementCount;
                 break;
             }
         }
@@ -147,24 +151,45 @@ void GLVertexBuffer::init()
     int ptr = 0;
     for(int i : ve)
     {
-        glVertexAttribPointer(_vertexAttribs, i, GL_FLOAT, GL_FALSE, _vertexCount * sizeof(float), (void*)(ptr * sizeof(float)));
+        glVertexAttribPointer(_vertexAttribs, i, GL_FLOAT, GL_FALSE, fullVertexSize * sizeof(float), (void*)(ptr * sizeof(float)));
         glEnableVertexAttribArray(_vertexAttribs);
         ptr += i;
         ++_vertexAttribs;
     }
+
+    for(const Element& e : _elements)
+    {
+        switch (e.type)
+        {
+        case Vec2:
+            delete (std::vector<glm::vec2>*)e.ptr;
+            break;
+        case Vec3:
+            delete (std::vector<glm::vec3>*)e.ptr;
+            break;
+        case Vec4:
+            delete (std::vector<glm::vec4>*)e.ptr;
+            break;
+        case Float:
+            delete[] (float*)e.ptr;
+            break;
+        }
+    }
+    _elements.clear();
     _inited = true;
     glBindVertexArray(0);
 }
 
-void GLVertexBuffer::setDrawIndexes(const std::vector<uint32_t>& v)
+void GLVertexBuffer::setDrawIndices(const std::vector<uint32_t> &v)
 {
     if (!_inited)
         return;
     glBindVertexArray(_vao);
     glGenBuffers(1, &_ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(uint32_t) * v.size(), v.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * v.size(), v.data(), GL_STATIC_DRAW);
     glBindVertexArray(0);
+    _indicesCount = v.size();
 }
 
 void GLVertexBuffer::bind()

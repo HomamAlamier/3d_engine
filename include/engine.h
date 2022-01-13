@@ -3,6 +3,8 @@
 #include <macros.h>
 #include <logger.h>
 #include <map>
+#include <engine_keyboard.h>
+
 NAMESPACE(sage3d)
 
 class Window;
@@ -11,11 +13,13 @@ class Engine;
 
 typedef void (*EngineDrawCallback)(Engine_GL*);
 typedef void (*EngineInitCallback)(Engine*);
+typedef void (*EngineKeyboardCallBack)(KeyboardKeyData*);
 
 enum EngineOptions
 {
     ShowFps
 };
+
 
 class Engine
 {
@@ -27,6 +31,7 @@ public:
     int exec();
     void setDrawCallback(EngineDrawCallback cb) { _drawCallback = cb; }
     void setInitCallback(EngineInitCallback cb) { _initCallback = cb; }
+    void setKeyboardCallback(EngineKeyboardCallBack cb) { _kbCallback = cb; }
     void setOptions(EngineOptions opt, bool value = true);
 private:
     bool getOption(EngineOptions opt);
@@ -34,6 +39,7 @@ private:
     Engine_GL* _gl;
     EngineDrawCallback _drawCallback;
     EngineInitCallback _initCallback;
+    EngineKeyboardCallBack _kbCallback;
     std::map<EngineOptions, bool> _options;
 };
 

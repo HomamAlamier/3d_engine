@@ -81,4 +81,17 @@ void Window::fpsInTitle()
     }
 }
 
+KeyboardKeyData Window::getKeyboardKeyData()
+{
+    std::vector<KeyboardKeys> keys;
+    for(int i = KEY_SPACE; i < KEY_MENU; ++i)
+    {
+        if (glfwGetKey((GLFWwindow*)_window, i) == GLFW_PRESS)
+        {
+            keys.push_back(static_cast<KeyboardKeys>(i));
+        }
+    }
+    return KeyboardKeyData(keys);
+}
+
 NAMESPACE_END
